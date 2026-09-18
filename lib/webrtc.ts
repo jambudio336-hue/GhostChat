@@ -13,7 +13,16 @@ export type WebRTCSession = {
   createOffer: () => Promise<SignalPayload>;
   acceptOffer: (payload: SignalPayload) => Promise<SignalPayload>;
   acceptAnswer: (payload: SignalPayload) => Promise<void>;
+  getQuality: () => Promise<NetworkQuality>;
   close: () => void;
+};
+
+export type NetworkQuality = {
+  label: "MENUNGGU" | "BAIK" | "CUKUP" | "LEMAH";
+  color: string;
+  rttMs: number | null;
+  packetLoss: number | null;
+  route: "LANGSUNG" | "TURN RELAY" | "MENUNGGU";
 };
 
 // Open Relay static-auth is a free demo relay. Replace these with credentials
@@ -66,6 +75,20 @@ export async function createWebRTCSession(kind: "audio" | "video", onSignal: (pa
     setTimeout(resolve, 3500);
   });
   const encode = (description: any): SignalPayload => ({ type: description.type, sdp: description.sdp });
+  const getQuality = async (): Promise<NetworkQuality> => {
+    const report = await pc.getStats();
+    const entries: any[] = [];
+    if (report?.forEach) report.forEach((value: any) => entries.push(value));
+    else if (Array.isArray(report)) entries.push(...report);
+    const pair = entries.find((item) => item.type === "candidate-pair" && (item.state === "succeeded" || item.nominated)) ?? entries.find((item) => item.type === "candidate-pair");
+    const inbound = entries.filter((item) => item.type === "inbound-rtp").reduce((sum, item) => sum + (item.packetsReceived ?? 0), 0);
+    const lost = entries.filter((item) => item.type === "inbound-rtp").reduce((sum, item) => sum + (item.packetsLost ?? 0), 0);
+    const packetLoss = inbound + lost > 0 ? (lost / (inbound + lost)) * 100 : null;
+    const rttMs = typeof pair?.currentRoundTripTime === "number" ? Math.round(pair.currentRoundTripTime * 1000) : null;
+    const route = pair?.localCandidateId && entries.find((item) => item.id === pair.localCandidateId)?.candidateType === "relay" ? "TURN RELAY" : pair ? "LANGSUNG" : "MENUNGGU";
+    const score = rttMs === null && packetLoss === null ? "MENUNGGU" : (rttMs !== null && rttMs > 350) || (packetLoss !== null && packetLoss > 8) ? "LEMAH" : (rttMs !== null && rttMs > 180) || (packetLoss !== null && packetLoss > 3) ? "CUKUP" : "BAIK";
+    return { label: score, color: score === "BAIK" ? "#46db8b" : score === "CUKUP" ? "#ffb83e" : score === "LEMAH" ? "#ff4968" : "#8f96a4", rttMs, packetLoss, route };
+  };
   return {
     pc,
     localStream,
@@ -73,6 +96,7 @@ export async function createWebRTCSession(kind: "audio" | "video", onSignal: (pa
     createOffer: async () => { const offer = await pc.createOffer(); await pc.setLocalDescription(offer); await waitForIce(); return encode(pc.localDescription); },
     acceptOffer: async (payload) => { await pc.setRemoteDescription({ type: "offer", sdp: payload.sdp }); const answer = await pc.createAnswer(); await pc.setLocalDescription(answer); await waitForIce(); return encode(pc.localDescription); },
     acceptAnswer: async (payload) => { await pc.setRemoteDescription({ type: "answer", sdp: payload.sdp }); },
+    getQuality,
     close: () => { localStream.getTracks().forEach((track: any) => track.stop()); pc.close(); },
   };
 }
