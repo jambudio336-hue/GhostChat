@@ -42,9 +42,12 @@ jobs:
       - name: Generate native Android project
         run: npx expo prebuild --platform android --no-install --clean
 
-      - name: Build unsigned release APK
+      - name: Generate temporary release signing key
+        run: keytool -genkeypair -v -keystore android/ghostchat-release.keystore -storepass ghostchat-release -keypass ghostchat-release -alias ghostchat -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=GhostChat, OU=Mobile, O=GhostChat, L=Jakarta, ST=DKI Jakarta, C=ID"
+
+      - name: Build signed release APK
         working-directory: android
-        run: ./gradlew assembleRelease --no-daemon
+        run: ./gradlew assembleRelease --no-daemon -Pandroid.injected.signing.store.file=${{ github.workspace }}/android/ghostchat-release.keystore -Pandroid.injected.signing.store.password=ghostchat-release -Pandroid.injected.signing.key.alias=ghostchat -Pandroid.injected.signing.key.password=ghostchat-release
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
