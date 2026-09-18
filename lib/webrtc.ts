@@ -16,7 +16,21 @@ export type WebRTCSession = {
   close: () => void;
 };
 
-const iceServers = [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun.cloudflare.com:3478" }];
+// Open Relay static-auth is a free demo relay. Replace these with credentials
+// from a dedicated TURN provider for production deployments.
+const iceServers = [
+  { urls: "stun:stun.l.google.com:19302" },
+  { urls: "stun:stun.cloudflare.com:3478" },
+  {
+    urls: [
+      "turn:staticauth.openrelay.metered.ca:80",
+      "turn:staticauth.openrelay.metered.ca:443?transport=tcp",
+      "turns:staticauth.openrelay.metered.ca:443",
+    ],
+    username: "openrelayproject",
+    credential: "openrelayprojectsecret",
+  },
+];
 
 function getRuntime() {
   if (Platform.OS === "web") {
