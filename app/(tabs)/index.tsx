@@ -3,8 +3,6 @@ import * as Clipboard from "expo-clipboard";
 import { MaterialIcons } from "@expo/vector-icons";
 import { VideoView, useVideoPlayer } from "expo-video";
 import { router } from "expo-router";
-import * as ImagePicker from "expo-image-picker";
-import * as DocumentPicker from "expo-document-picker";
 import { RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, useAudioRecorder, useAudioRecorderState } from "expo-audio";
 import { useEffect, useMemo, useState } from "react";
 import { Alert, FlatList, ImageBackground, Linking, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
@@ -79,8 +77,8 @@ export default function HomeScreen() {
     setMessages((current) => [...current, { id: Date.now().toString(), text: asset.name ?? "Attachment terkirim", time: "sekarang", mine: true, kind: asset.kind ?? "file", uri: asset.uri, name: asset.name }]);
     setShowAttachmentMenu(false);
   };
-  const pickPhoto = async (camera = false) => { const result = camera ? await ImagePicker.launchCameraAsync({ mediaTypes: ["images"], quality: 0.8 }) : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.8 }); if (!result.canceled) await addAttachment({ uri: result.assets[0].uri, name: "foto-" + Date.now() + ".jpg", mimeType: "image/jpeg", kind: "photo" }); };
-  const pickDocument = async () => { const result = await DocumentPicker.getDocumentAsync({ copyToCacheDirectory: true }); if (!result.canceled) await addAttachment({ uri: result.assets[0].uri, name: result.assets[0].name, mimeType: result.assets[0].mimeType, kind: "file" }); };
+  const pickPhoto = async (camera = false) => { const ImagePicker = await import("expo-image-picker"); const result = camera ? await ImagePicker.launchCameraAsync({ mediaTypes: ["images"], quality: 0.8 }) : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.8 }); if (!result.canceled) await addAttachment({ uri: result.assets[0].uri, name: "foto-" + Date.now() + ".jpg", mimeType: "image/jpeg", kind: "photo" }); };
+  const pickDocument = async () => { const DocumentPicker = await import("expo-document-picker"); const result = await DocumentPicker.getDocumentAsync({ copyToCacheDirectory: true }); if (!result.canceled) await addAttachment({ uri: result.assets[0].uri, name: result.assets[0].name, mimeType: result.assets[0].mimeType, kind: "file" }); };
   const toggleVoice = async () => { if (recorderState.isRecording) { await recorder.stop(); if (recorder.uri) await addAttachment({ uri: recorder.uri, name: "voice-" + Date.now() + ".m4a", mimeType: "audio/mp4", kind: "voice" }); } else { await recorder.prepareToRecordAsync(); recorder.record(); } };
 
   const generatePairing = () => {
