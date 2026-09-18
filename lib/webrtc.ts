@@ -1,4 +1,5 @@
 import { Platform } from "react-native";
+import { publishPeerMessage, setChatTransport } from "@/lib/chat-channel";
 
 export type SignalPayload = {
   type: "offer" | "answer" | "ice";
@@ -58,6 +59,19 @@ export async function createWebRTCSession(kind: "audio" | "video", onSignal: (pa
     throw new Error("WebRTC belum tersedia. Jalankan GhostChat sebagai development build Android/iOS atau browser yang mendukung WebRTC.");
   }
   const pc = new runtime.RTCPeerConnection({ iceServers });
+  let dataChannel: any = null;
+  const attachDataChannel = (channel: any) => {
+    dataChannel = channel;
+    channel.onmessage = (event: any) => {
+      try { const packet = JSON.parse(String(event.data)); if (packet.type === "chat" && typeof packet.text === "string") publishPeerMessage(packet.text); } catch { /* ignore malformed data */ }
+    };
+    setChatTransport((text) => {
+      if (dataChannel?.readyState !== "open") return false;
+      dataChannel.send(JSON.stringify({ type: "chat", text }));
+      return true;
+    });
+  };
+  pc.ondatachannel = (event: any) => attachDataChannel(event.channel);
   const localStream = await runtime.mediaDevices.getUserMedia({ audio: true, video: kind === "video" });
   localStream.getTracks().forEach((track: any) => pc.addTrack(track, localStream));
   const remoteStream = typeof MediaStream !== "undefined" ? new MediaStream() : null;
@@ -93,11 +107,11 @@ export async function createWebRTCSession(kind: "audio" | "video", onSignal: (pa
     pc,
     localStream,
     remoteStream,
-    createOffer: async () => { const offer = await pc.createOffer(); await pc.setLocalDescription(offer); await waitForIce(); return encode(pc.localDescription); },
+    createOffer: async () => { if (!dataChannel && typeof pc.createDataChannel === "function") attachDataChannel(pc.createDataChannel("ghostchat-chat", { ordered: true })); const offer = await pc.createOffer(); await pc.setLocalDescription(offer); await waitForIce(); return encode(pc.localDescription); },
     acceptOffer: async (payload) => { await pc.setRemoteDescription({ type: "offer", sdp: payload.sdp }); const answer = await pc.createAnswer(); await pc.setLocalDescription(answer); await waitForIce(); return encode(pc.localDescription); },
     acceptAnswer: async (payload) => { await pc.setRemoteDescription({ type: "answer", sdp: payload.sdp }); },
     getQuality,
-    close: () => { localStream.getTracks().forEach((track: any) => track.stop()); pc.close(); },
+    close: () => { setChatTransport(null); localStream.getTracks().forEach((track: any) => track.stop()); dataChannel?.close?.(); pc.close(); },
   };
 }
 

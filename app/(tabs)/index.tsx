@@ -8,6 +8,7 @@ import { Alert, FlatList, ImageBackground, Linking, Modal, Pressable, StyleSheet
 import { ScreenContainer } from "@/components/screen-container";
 import introVideo from "../../assets/video/ghostchat-intro.mp4";
 import chatBackground from "../../assets/images/chat-background.jpg";
+import { sendPeerMessage, subscribePeerMessages, type ChatPacket } from "@/lib/chat-channel";
 
 const WA_NUMBER = "6285262965282";
 const INTRO_KEY = "ghostchat_intro_seen";
@@ -40,6 +41,7 @@ export default function HomeScreen() {
       if (!seen) setShowIntro(true);
     });
   }, []);
+  useEffect(() => { const unsubscribe = subscribePeerMessages((packet: ChatPacket) => setMessages((current) => [...current, packet])); return () => { unsubscribe(); }; }, []);
 
   const openWhatsApp = async (kind: "rating" | "bug") => {
     const message = kind === "rating" ? "Halo GhostChat, saya ingin memberikan rating dan masukan: " : "Halo GhostChat, saya ingin melaporkan bug: ";
@@ -52,6 +54,10 @@ export default function HomeScreen() {
   const sendMessage = () => {
     const text = draft.trim();
     if (!text) return;
+    if (!sendPeerMessage(text)) {
+      Alert.alert("Belum terhubung", "Hubungkan panggilan WebRTC terlebih dahulu agar pesan terkirim ke perangkat partner.");
+      return;
+    }
     setMessages((current) => [...current, { id: Date.now().toString(), text, mine: true, time: "sekarang" }]);
     setDraft("");
   };
