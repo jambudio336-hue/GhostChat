@@ -8,6 +8,7 @@ import "react-native-reanimated";
 import { Platform } from "react-native";
 import "@/lib/_core/nativewind-pressable";
 import { ThemeProvider } from "@/lib/theme-provider";
+import { prepareNotifications } from "@/lib/notifications";
 import {
   SafeAreaFrameContext,
   SafeAreaInsetsContext,
@@ -27,6 +28,7 @@ export const unstable_settings = {
 };
 
 export default function RootLayout() {
+  useEffect(() => { prepareNotifications(); }, []);
   const initialInsets = initialWindowMetrics?.insets ?? DEFAULT_WEB_INSETS;
   const initialFrame = initialWindowMetrics?.frame ?? DEFAULT_WEB_FRAME;
 

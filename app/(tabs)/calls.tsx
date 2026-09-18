@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
 import { addIceCandidate, createWebRTCSession, type NetworkQuality, type SignalPayload, type WebRTCSession } from "@/lib/webrtc";
+import { notifyIncomingCall } from "@/lib/notifications";
 
 type CallKind = "audio" | "video";
 
@@ -49,6 +50,7 @@ export default function CallsScreen() {
     try {
       const payload = JSON.parse(incoming) as SignalPayload;
       if (payload.type !== "offer") throw new Error("Payload harus bertipe offer.");
+      await notifyIncomingCall("Partner GhostChat", kind);
       const next = await createWebRTCSession(kind, signalHandler, () => { setRemoteActive(true); setStatus("Media partner aktif · terenkripsi peer-to-peer"); });
       const answer = await next.acceptOffer(payload);
       setSession(next);
