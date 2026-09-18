@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Clipboard from "expo-clipboard";
 import { MaterialIcons } from "@expo/vector-icons";
 import { VideoView, useVideoPlayer } from "expo-video";
 import { router } from "expo-router";
@@ -54,6 +55,10 @@ export default function HomeScreen() {
     setMessages((current) => [...current, { id: Date.now().toString(), text, mine: true, time: "sekarang" }]);
     setDraft("");
   };
+  const copyMessage = async (text: string) => {
+    await Clipboard.setStringAsync(text);
+    Alert.alert("Pesan disalin", "Teks pesan sudah masuk ke clipboard.");
+  };
 
   const generatePairing = () => {
     const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -97,7 +102,7 @@ export default function HomeScreen() {
             renderItem={({ item }) => (
               <View style={[styles.messageRow, item.mine && styles.messageRowMine]}>
                 {!item.mine && <View style={styles.avatar}><Text style={styles.avatarText}>N</Text></View>}
-                <View style={[styles.bubble, item.mine ? styles.mineBubble : styles.theirBubble]}><Text style={styles.messageText}>{item.text}</Text><Text style={styles.messageTime}>{item.time} {item.mine ? "✓✓" : ""}</Text></View>
+                <Pressable onLongPress={() => copyMessage(item.text)} delayLongPress={420} style={[styles.bubble, item.mine ? styles.mineBubble : styles.theirBubble]}><Text style={styles.messageText}>{item.text}</Text><Text style={styles.messageTime}>{item.time} {item.mine ? "✓✓" : ""}</Text></Pressable>
               </View>
             )}
           />
