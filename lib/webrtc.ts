@@ -1,5 +1,5 @@
 import { Platform } from "react-native";
-import { publishPeerMessage, setChatTransport } from "@/lib/chat-channel";
+import { receivePeerPacket, setChatTransport } from "@/lib/chat-channel";
 
 export type SignalPayload = {
   type: "offer" | "answer" | "ice";
@@ -63,11 +63,11 @@ export async function createWebRTCSession(kind: "audio" | "video", onSignal: (pa
   const attachDataChannel = (channel: any) => {
     dataChannel = channel;
     channel.onmessage = (event: any) => {
-      try { const packet = JSON.parse(String(event.data)); if (packet.type === "chat" && typeof packet.text === "string") publishPeerMessage(packet.text); } catch { /* ignore malformed data */ }
+      try { void receivePeerPacket(JSON.parse(String(event.data))); } catch { /* ignore malformed data */ }
     };
-    setChatTransport((text) => {
+    setChatTransport((packet) => {
       if (dataChannel?.readyState !== "open") return false;
-      dataChannel.send(JSON.stringify({ type: "chat", text }));
+      dataChannel.send(JSON.stringify(packet));
       return true;
     });
   };
