@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>M4zk1pL4y Nusantara OSINT</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root{--bg:#050505;--panel:#0c0c0c;--panel2:#111;--fg:#d8ffd8;--acc:#00ff41;--acc2:#ff2d55;--acc3:#00d4ff;--acc4:#ffd400;--dim:#555;--brd:2px solid var(--acc)}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--fg);font-family:monospace;min-height:100dvh;overflow-x:hidden}
+#matrix{position:fixed;inset:0;z-index:0;opacity:.07;pointer-events:none}
+::selection{background:var(--acc);color:#000}
+header{background:#000;border-bottom:var(--brd);padding:12px;position:sticky;top:0;z-index:20;box-shadow:0 4px 24px rgba(0,255,65,.15)}
+.logo{font-size:clamp(14px,4.5vw,21px);letter-spacing:2px;font-weight:bold;animation:glitch 4s infinite}
+.logo b{color:var(--acc);text-shadow:0 0 8px rgba(0,255,65,.6)}
+.logo span{color:var(--acc2);text-shadow:0 0 8px rgba(255,45,85,.5)}
+@keyframes glitch{0%,91%,100%{transform:none;filter:none}92%{transform:translate(2px,-1px) skewX(3deg);filter:hue-rotate(90deg)}94%{transform:translate(-2px,1px)}96%{transform:translateX(1px)}}
+.sub{display:flex;justify-content:space-between;align-items:center;margin-top:5px;font-size:10px;flex-wrap:wrap;gap:4px}
+#net{padding:2px 8px;border:1px solid}
+#net.on{color:var(--acc);border-color:var(--acc);animation:pulse 2s infinite}
+#net.off{color:var(--acc2);border-color:var(--acc2)}
+@keyframes pulse{50%{opacity:.4}}
+#clock{color:var(--acc3)}
+nav{display:flex;overflow-x:auto;background:#020202;border-bottom:1px solid #0f2f0f;scrollbar-width:none;position:sticky;top:76px;z-index:19}
+nav::-webkit-scrollbar{display:none}
+nav button{flex:0 0 auto;padding:11px 14px;background:none;border:none;border-right:1px solid #0f2f0f;color:var(--dim);font-family:monospace;font-size:10.5px;text-transform:uppercase;cursor:pointer;transition:all .2s;letter-spacing:1px;position:relative}
+nav button::before{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--acc);transform:scaleX(0);transition:transform .25s}
+nav button.active{color:var(--acc);background:#071407;text-shadow:0 0 6px rgba(0,255,65,.7)}
+nav button.active::before{transform:scaleX(1)}
+main{padding:14px 12px 90px;position:relative;z-index:1}
+section{display:none}
+section.active{display:block;animation:fadein .35s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.dcard{background:var(--panel);border:1px solid #143014;padding:14px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.dcard:active{transform:scale(.96);border-color:var(--acc);box-shadow:0 0 18px rgba(0,255,65,.35)}
+.dcard .ic{font-size:26px;margin-bottom:6px}
+.dcard .tt{font-size:11px;color:var(--acc);text-transform:uppercase;letter-spacing:1px}
+.dcard .ds{font-size:9px;color:var(--dim);margin-top:4px;line-height:1.4}
+.dcard::after{content:'';position:absolute;top:-60%;left:-60%;width:40%;height:200%;background:linear-gradient(90deg,transparent,rgba(0,255,65,.06),transparent);animation:shine 4s infinite}
+.dcard:nth-child(2n)::after{animation-delay:1s}.dcard:nth-child(3n)::after{animation-delay:2s}
+@keyframes shine{0%{left:-60%}60%,100%{left:130%}}
+.stat{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.sbox{background:var(--panel);border:1px solid #143014;padding:12px;text-align:center}
+.sbox .n{font-size:22px;color:var(--acc);font-weight:bold;text-shadow:0 0 10px rgba(0,255,65,.5)}
+.sbox .l{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-top:3px}
+h3.hd{font-size:12px;color:var(--acc3);text-transform:uppercase;letter-spacing:2px;margin:16px 0 8px;border-left:4px solid var(--acc2);padding-left:8px}
+input,select,button.act,textarea{width:100%;padding:13px;margin-bottom:10px;background:var(--panel2);color:var(--fg);border:2px solid #1a4a1a;font-family:monospace;font-size:15px;outline:none;transition:border-color .2s}
+textarea{min-height:80px;resize:vertical}
+input:focus,textarea:focus{border-color:var(--acc);box-shadow:0 0 12px rgba(0,255,65,.25)}
+button.act{background:linear-gradient(180deg,#00cc35,#00881f);color:#000;font-weight:bold;text-transform:uppercase;letter-spacing:2px;cursor:pointer;border:2px solid var(--acc);box-shadow:0 4px 0 #006614,0 0 14px rgba(0,255,65,.3);transition:all .1s}
+button.act:active{transform:translateY(4px);box-shadow:0 0 14px rgba(255,45,85,.4);border-color:var(--acc2)}
+button.act.red{background:linear-gradient(180deg,#ff4d6d,#c41440);border-color:var(--acc2);box-shadow:0 4px 0 #7a1024}
+button.act.blue{background:linear-gradient(180deg,#33e0ff,#0088aa);border-color:var(--acc3);box-shadow:0 4px 0 #005566}
+input[type=file]{padding:10px;font-size:12px}
+.out{background:var(--panel);border:1px solid #1a4a1a;border-left:4px solid var(--acc);padding:12px;margin-top:10px;font-size:13px;word-break:break-all;white-space:pre-wrap;max-height:55vh;overflow-y:auto;animation:fadein .3s}
+.out::-webkit-scrollbar{width:4px}.out::-webkit-scrollbar-thumb{background:#1a4a1a}
+.kv{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px dashed #0f2f0f;flex-wrap:wrap;animation:fadein .3s}
+.kv b{color:var(--acc);flex:0 0 auto}.kv span{text-align:right}
+.found{color:var(--acc)}.notfound{color:var(--acc2)}.info{color:var(--acc3)}
+.note{font-size:10px;color:var(--dim);margin-top:6px}
+.loader{animation:blink .6s infinite;color:var(--acc4)}@keyframes blink{50%{opacity:.15}}
+img.prev{max-width:100%;border:2px solid #1a4a1a;margin-top:8px}
+a{color:var(--acc3)}
+details summary{color:var(--acc3);font-size:11px;cursor:pointer}
+#ticker{position:fixed;bottom:0;left:0;right:0;background:#000;border-top:var(--brd);padding:9px 12px;font-size:10px;color:var(--acc);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:20}
+#ticker::before{content:'▮';animation:blink .8s infinite;margin-right:6px}
+.scan{position:fixed;top:0;left:0;right:0;height:2px;background:var(--acc);box-shadow:0 0 12px var(--acc);opacity:0;z-index:99;pointer-events:none}
+.scan.go{animation:scanx 1s linear}
+@keyframes scanx{0%{opacity:1;top:0}100%{opacity:0;top:100%}}
+#toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-20px);background:#000;border:2px solid var(--acc);color:var(--acc);padding:10px 18px;font-size:12px;z-index:100;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.err{border-color:var(--acc2);color:var(--acc2)}
+.chip{width:auto;padding:8px 12px;margin:0 0 10px 0;font-size:10px;letter-spacing:1px;display:inline-block}
+.pbar{height:10px;background:#0a1a0a;border:1px solid #1a4a1a;margin:8px 0;overflow:hidden}
+.pbar>div{height:100%;background:linear-gradient(90deg,#00ff41,#00d4ff);width:0%;transition:width .4s;box-shadow:0 0 10px rgba(0,255,65,.6)}
+</style>
+</head>
+<body>
+<div id="matrix"><canvas id="mc"></canvas></div>
+<div class="scan" id="scanfx"></div>
+<div id="toast"></div>
+
+<header>
+  <div class="logo"><b>M4zk1pL4Y</b> <span>NUSANTARA</span></div>
+  <div class="sub">
+    <span style="color:var(--dim)">OSINT SUITE v5.0 // FULLSTACK EDITION</span>
+    <span id="net" class="off">[ -- ]</span>
+    <span id="clock">--:--:--</span>
+  </div>
+</header>
+<nav id="nav"></nav>
+<main id="main"></main>
+<div id="ticker">[SYS] booting...</div>
+
+<script>
+/* ================================================================
+   M4zk1pL4Y NUSANTARA v5.0 — FULLSTANDALONE (NO SERVER)
+   28 MODUL: Dashboard · Dorking Engine · OSINT · Utility
+   Riwayat · Scope Generator · Clone Site (ZIP download)
+================================================================ */
+const $=i=>document.getElementById(i);
+const esc=s=>String(s??'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+const kv=(k,v,c)=>`<div class="kv"><b>${esc(k)}</b><span class="${c||''}">${esc(v??'-')}</span></div>`;
+let tt;function toast(m,err){const t=$('toast');t.textContent=m;t.className='show'+(err?' err':'');clearTimeout(tt);tt=setTimeout(()=>t.className='',2200)}
+const tick=m=>$('ticker').textContent=m;
+
+/* ==== MATRIX RAIN ==== */
+(()=>{const c=$('mc'),x=c.getContext('2d');let cols,drops;
+function rs(){c.width=innerWidth;c.height=innerHeight;cols=Math.floor(c.width/14);drops=Array(cols).fill(0).map(()=>Math.random()*-60)}
+rs();addEventListener('resize',rs);
+const ch='01アイウエオM4ZK<>#$'.split('');
+setInterval(()=>{x.fillStyle='rgba(5,5,5,.09)';x.fillRect(0,0,c.width,c.height);
+x.fillStyle='#00ff41';x.font='12px monospace';
+drops.forEach((d,i)=>{x.fillText(ch[Math.floor(Math.random()*ch.length)],i*14,d*14);
+d>innerHeight/14&&Math.random()>.975?drops[i]=0:drops[i]+=1;});},60)})();
+
+setInterval(()=>{$('clock').textContent=new Date().toLocaleTimeString('id-ID')},1000);
+
+/* ================== TOOLS REGISTRY ================== */
+const tools=[
+ ['home','▓ DASHBOARD'],['dork','🔎 DORKING'],['ip','IP GEO'],['sub','SUBDOMAIN'],['user','USERNAME'],
+ ['phone','PHONE'],['whois','WHOIS'],['dns','DNS'],['email','EMAIL'],['port','PORT'],['hdr','HEADER'],
+ ['gh','GITHUB'],['exif','EXIF IMG'],['qr','QR GEN'],['hash','HASH'],['b64','BASE64'],
+ ['urlcd','URL CODE'],['pass','PASS GEN'],['aes','AES CRYPT'],['uuid','UUID GEN'],
+ ['wayback','WAYBACK'],['paste','PASTE SEARCH'],['tech','TECH DETECT'],['shot','SCREENSHOT'],
+ ['cidr','CIDR CALC'],['ident','FAKE IDENT'],['clone','🕸 CLONE SITE'],
+ ['hist','💾 RIWAYAT'],['scope','📄 SCOPE GEN']
+];
+const ICO={home:'▓',dork:'🔎',ip:'🌐',sub:'🔍',user:'👤',phone:'📱',whois:'📜',dns:'🛰',email:'📧',port:'🚪',hdr:'📡',gh:'🐙',exif:'🖼',qr:'▚',hash:'#',b64:'⇄',urlcd:'🔗',pass:'🔑',aes:'🔒',uuid:'🆔',wayback:'🕰',paste:'📋',tech:'⚙',shot:'📸',cidr:'🧮',ident:'🎭',clone:'🕸',hist:'💾',scope:'📄'};
+const DESC={dork:'74 dork klik Google',ip:'Geo lokasi & ISP',sub:'Cari subdomain',user:'Multi-platform hunt',phone:'Operator & validasi',whois:'Data domain',dns:'Semua record',email:'MX & gravatar',port:'Cek port terbuka',hdr:'Response headers',gh:'Profil & repo GitHub',exif:'Metadata foto',qr:'Buat QR code',hash:'SHA-1/256/512',b64:'Encode/decode',urlcd:'Encode URL',pass:'Password kuat',aes:'Enkripsi offline',uuid:'UUID v4',wayback:'Riwayat arsip',paste:'Cari pastebin dump',tech:'Fingerprint situs',shot:'Tangkap layar situs',cidr:'Kalkulator subnet',ident:'Identitas acak',clone:'Mirror situs → ZIP',hist:'Hasil scan tersimpan',scope:'Scope pentest resmi'};
+
+const nav=$('nav'),main=$('main');
+
+/* ================== DASHBOARD ================== */
+let scanCount=0;
+const log=[];
+function slog(m){log.unshift(new Date().toLocaleTimeString('id-ID')+' '+m);if(log.length>40)log.pop();
+ const sl=$('syslog');if(sl)sl.innerHTML=log.map(esc).join('<br>')}
+
+function renderDash(){
+ dash.innerHTML=`
+ <div class="stat">
+  <div class="sbox"><div class="n">${tools.length-1}</div><div class="l">Modul Aktif</div></div>
+  <div class="sbox"><div class="n" id="st-scan">${scanCount}</div><div class="l">Total Scan</div></div>
+  <div class="sbox"><div class="n" id="st-online">${navigator.onLine?'●':'○'}</div><div class="l">Status</div></div>
+  <div class="sbox"><div class="n">${navigator.onLine?'ON':'OFF'}</div><div class="l">Jaringan</div></div>
+ </div>
+ <h3 class="hd">[ QUICK ACCESS ]</h3>
+ <div class="dgrid">${tools.slice(1).map(([id,lb])=>`
+  <div class="dcard" onclick="jump('${id}')">
+   <div class="ic">${ICO[id]||'▪'}</div><div class="tt">${lb}</div>
+   <div class="ds">${DESC[id]||''}</div></div>`).join('')}</div>
+ <h3 class="hd">[ SYSTEM LOG ]</h3>
+ <div class="out" id="syslog">${log.map(esc).join('<br>')}</div>`;
+}
+function jump(id){const i=tools.findIndex(t=>t[0]===id);select(i);toast('[+] '+tools[i][1]+' dibuka')}
+
+/* ================== BUILD SECTIONS ================== */
+tools.forEach(([id,lb])=>{
+ const b=document.createElement('button');b.textContent=(ICO[id]||'')+' '+lb;b.onclick=()=>select(tools.findIndex(t=>t[0]===id));nav.appendChild(b);
+ const s=document.createElement('section');s.id='sec-'+id;
+ if(id==='home')dash2fix(s);else s.innerHTML=sectionBody(id,lb);
+ main.appendChild(s);
+});
+function dash2fix(s){s.id='sec-home'}
+const dash=document.getElementById('sec-home');
+
+function sectionBody(id,lb){
+ if(id==='hist')return `<button class="act" onclick="renderHist()">[ ↻ REFRESH RIWAYAT ]</button>
+   <button class="act red" onclick="clearHist()">[ 🗑 HAPUS SEMUA ]</button>
+   <div class="out" id="out-hist">// memuat riwayat...</div>`;
+ if(id==='scope')return `
+   <h3 class="hd">[ DATA PROYEK ]</h3>
+   <input id="sc-name" placeholder="Nama proyek / klien (contoh: PT Nusantara Tech)">
+   <input id="sc-pentester" placeholder="Nama pentester / tim lo">
+   <input id="sc-email" placeholder="Email kontak pentester">
+   <input id="sc-start" placeholder="Tanggal mulai (contoh: 21 September 2026)">
+   <input id="sc-end" placeholder="Tanggal selesai (contoh: 30 September 2026)">
+   <h3 class="hd">[ TARGET SCOPE ]</h3>
+   <textarea id="sc-targets" placeholder="Satu target per baris, contoh:
+https://target.com
+https://api.target.com
+10.10.10.0/24
+*.target.com"></textarea>
+   <h3 class="hd">[ JENIS PENGUJIAN ]</h3>
+   <select id="sc-type">
+     <option>Black Box Penetration Testing</option>
+     <option>Grey Box Penetration Testing</option>
+     <option>White Box Penetration Testing</option>
+     <option>Web Application Security Assessment</option>
+     <option>Mobile Application Security Assessment</option>
+     <option>Network Infrastructure Assessment</option>
+     <option>API Security Assessment</option>
+     <option>Social Engineering Assessment</option>
+   </select>
+   <h3 class="hd">[ ATURAN ENGAGEMENT ]</h3>
+   <textarea id="sc-rules" placeholder="Aturan khusus, satu per baris (opsional, kosongkan untuk default)"></textarea>
+   <button class="act" onclick="run('scope')">[ ▶ GENERATE & DOWNLOAD SCOPE ]</button>
+   <div class="out" id="out-scope">// dokumen scope resmi akan muncul di sini + otomatis terdownload</div>
+   <div class="note">* Hasil berupa file HTML resmi — bisa dibuka, diedit di editor teks/Word, dicetak jadi PDF.</div>`;
+ if(id==='dork')return `
+   <input id="in-dork" placeholder="domain target (contoh: target.com)" onkeydown="if(event.key==='Enter')renderDorks()">
+   <button class="act" onclick="renderDorks()">[ ▶ GENERATE SEMUA DORK ]</button>
+   <div id="dork-filter" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+   <div class="out" id="out-dork">// masukkan domain lalu tap generate — semua dork jadi link klik-langsung ke Google</div>`;
+ if(id==='exif')return `<input type="file" id="in-exif" accept="image/*">
+   <button class="act" onclick="run('exif')">[ ▶ ANALISIS EXIF ]</button>
+   <div class="out" id="out-exif">// pilih gambar lalu analisis</div>
+   <div class="note">* 100% lokal, file tidak diupload.</div>`;
+ if(id==='b64')return `<textarea id="in-b64" placeholder="Teks / base64"></textarea>
+   <button class="act" onclick="run('b64enc')">[ ⇨ ENCODE ]</button><button class="act" onclick="run('b64dec')">[ ⇦ DECODE ]</button>
+   <div class="out" id="out-b64enc">// hasil encode/decode</div>`;
+ if(id==='aes')return `<input id="in-aes-t" placeholder="Teks / data"><input id="in-aes-k" placeholder="Kunci (password)">
+   <button class="act" onclick="run('aesenc')">[ 🔒 ENCRYPT ]</button><button class="act" onclick="run('aesdec')">[ 🔓 DECRYPT ]</button>
+   <div class="out" id="out-aesenc">// hasil</div>
+   <div class="note">* AES-256-GCM offline via WebCrypto.</div>`;
+ if(id==='clone')return `
+   <h3 class="hd">[ TARGET CLONE ]</h3>
+   <input id="in-clone" placeholder="https://target.com" onkeydown="if(event.key==='Enter')run('clone')">
+   <h3 class="hd">[ KONFIGURASI ]</h3>
+   <input id="cl-max" type="number" value="15" placeholder="Max halaman (default 15)">
+   <input id="cl-assets" type="number" value="60" placeholder="Max aset/gambar (default 60)">
+   <button class="act" onclick="run('clone')">[ ▶ MULAI CLONE & DOWNLOAD ZIP ]</button>
+   <div class="out" id="out-clone">// progress clone akan tampil di sini</div>
+   <div class="note">* Clone halaman + CSS + JS + gambar → ZIP siap download, jalan offline.<br>
+   * Sesuaikan max halaman/aset dengan scope lo — makin besar makin lama.</div>`;
+ return `<input id="in-${id}" placeholder="${ph(id)}" onkeydown="if(event.key==='Enter')run('${id}')">
+   <button class="act" onclick="run('${id}')">[ ▶ RUN ${lb} ]</button>
+   <div class="out" id="out-${id}">// menunggu perintah...</div>${noteFor(id)}`;
+}
+function ph(id){return{ip:'IP (kosong = IP lo)',sub:'domain (example.com)',user:'username',phone:'62xxx / 08xxx',whois:'domain',dns:'domain',email:'email@target.com',port:'host:port',hdr:'https://...',gh:'username github',qr:'teks / URL',hash:'teks',urlcd:'URL / teks',pass:'(auto)',uuid:'(auto)',wayback:'URL domain',paste:'keyword',tech:'https://...',shot:'https://...',cidr:'192.168.1.0/24',ident:'(auto)'}[id]}
+function noteFor(id){const n={pass:'* Kripto-aman, offline.',uuid:'* Kripto-aman, offline.',ident:'* Offline, acak.',cidr:'* Offline.'};return n[id]?`<div class="note">${n[id]}</div>`:''}
+
+function select(i){
+ [...nav.children].forEach((b,j)=>b.classList.toggle('active',i===j));
+ [...main.children].forEach((s,j)=>s.classList.toggle('active',i===j));
+ if(tools[i][0]==='home')renderDash();
+ if(tools[i][0]==='hist')renderHist();
+ scroll(0,0);}
+select(0);
+
+/* ================== RUN CORE ================== */
+window.run=async function(id){
+ const fx=$('scanfx');fx.classList.remove('go');void fx.offsetWidth;fx.classList.add('go');
+ const get=()=>$('in-'+id)?$('in-'+id).value.trim():'';
+ /* output element: modul multi-aksi pakai key sub-action */
+ const okey=['b64enc','b64dec','aesenc','aesdec'].includes(id)?id:id;
+ const out=$('out-'+okey);if(!out)return;
+ const auto=['ip','pass','uuid','ident','scope','clone','b64enc','b64dec','aesenc','aesdec','exif'];
+ if(!auto.includes(id)&&!get()){
+  out.innerHTML='<span class="notfound">[!] input kosong</span>';toast('[!] Input kosong',1);return}
+ if(!['clone'].includes(id))out.innerHTML='<span class="loader">[ ▓▓▓ SCANNING... ▓▓▓ ]</span>';
+ tick('[LIVE] modul: '+id);slog('[RUN] '+id);
+ try{
+  const d=await ENGINE[id](get());
+  if(id!=='clone')RENDER[id](d,out);
+  if(id!=='clone'){scanCount++;saveScan({module:id,input:get()||'(auto)',result:out.innerHTML,ts:Date.now()});
+   const sc=$('st-scan');if(sc)sc.textContent=scanCount;
+   tick('[DONE] '+id+' ✓');toast('[✔] '+id+' selesai');slog('[OK] '+id);}
+ }catch(e){
+  out.innerHTML='<span class="notfound">[ERROR] '+esc(e.message)+'</span>';
+  tick('[FAIL] '+id);toast('[✘] '+e.message,1);slog('[ERR] '+id+' — '+e.message);}
+};
+
+/* ================== ENGINE ================== */
+const sha=async(t,a='SHA-256')=>[...new Uint8Array(await crypto.subtle.digest(a,new TextEncoder().encode(t)))].map(b=>b.toString(16).padStart(2,'0')).join('');
+const ENGINE={
+ ip:q=>fetch('https://ipwho.is/'+q).then(r=>r.json()),
+ sub:async d=>{const r=await fetch('https://crt.sh/?q=%25.'+encodeURIComponent(d)+'&output=json');
+  if(!r.ok)throw new Error('crt.sh timeout');const j=await r.json();
+  return{domain:d,subs:[...new Set(j.flatMap(x=>x.name_value.split('\n')))].sort()}},
+ user:async u=>{const p=[['GitHub','https://github.com/'+u],['Instagram','https://instagram.com/'+u],['X','https://x.com/'+u],['TikTok','https://tiktok.com/@'+u],['Reddit','https://reddit.com/user/'+u],['Telegram','https://t.me/'+u],['Steam','https://steamcommunity.com/id/'+u],['Medium','https://medium.com/@'+u],['Spotify','https://open.spotify.com/user/'+u],['Pinterest','https://pinterest.com/'+u]];
+  return{username:u,results:await Promise.all(p.map(async([n,url])=>{try{const r=await fetch(url);return{name:n,url,found:r.ok}}catch{return{name:n,url,found:false}}}))}},
+ phone:n=>{const num=n.replace(/\D/g,'').replace(/^0/,'62');
+  const op={'62811':'Telkomsel','62812':'Telkomsel','62813':'Telkomsel','62821':'Telkomsel','62822':'Telkomsel','62823':'Telkomsel','62852':'Telkomsel KartuAs','62851':'Telkomsel KartuAs','62814':'Indosat','62815':'Indosat','62816':'Indosat','62855':'Indosat IM3','62856':'Indosat IM3','62857':'Indosat','62858':'Indosat','62817':'XL','62818':'XL','62819':'XL','62859':'XL','62877':'XL','62878':'XL','62881':'Axis','62882':'Axis','62883':'Axis','62838':'Axis','62895':'Three (3)','62896':'Three (3)','62897':'Three (3)','62898':'Three (3)','62888':'Smartfren','62889':'Smartfren','62899':'By.U','62831':'Telkomsel Halo','62861':'Indosat Matrix'};
+  const k=Object.keys(op).find(k=>num.startsWith(k));
+  return{number:'+'+num,operator:k?op[k]:'Tidak dikenal',valid:num.startsWith('62')&&num.length>=10&&num.length<=14,len:num.length}},
+ whois:async d=>{const r=await fetch('https://rdap.org/domain/'+encodeURIComponent(d));
+  if(!r.ok)throw new Error('Domain tidak ditemukan');const j=await r.json();
+  return{domain:j.ldhName,reg:(j.entities||[]).find(e=>(e.roles||[]).includes('registrar'))?.vcardArray?.[1]?.find(v=>v[0]==='fn')?.[3]||'N/A',ev:(j.events||[]).map(e=>e.eventAction+' : '+e.eventDate),ns:(j.nameservers||[]).map(n=>n.ldhName),st:j.status}},
+ dns:async d=>{const ts=['A','AAAA','MX','NS','TXT','CNAME','SOA'];
+  return{domain:d,rec:await Promise.all(ts.map(async t=>{try{const r=await fetch(`https://dns.google/resolve?name=${encodeURIComponent(d)}&type=${t}`);return{t,a:((await r.json()).Answer||[]).map(x=>x.data)}}catch{return{t,a:[]}}}))}},
+ email:async e=>{if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e))throw new Error('Format email tidak valid');
+  const h=await sha(e.trim().toLowerCase());
+  let mx='-';try{const r=await fetch(`https://dns.google/resolve?name=${encodeURIComponent(e.split('@')[1])}&type=MX`);mx=((await r.json()).Answer||[]).map(a=>a.data).join(', ')||'tidak ada'}catch{}
+  return{email:e,h,mx}},
+ port:async h=>{const[host,port]=h.includes(':')?h.split(':'):[h,'80'];
+  const r=await fetch(`https://check-host.net/check-tcp?host=${encodeURIComponent(host+':'+port)}&max_nodes=3`,{headers:{Accept:'application/json'}});
+  return{host,port:parseInt(port),rid:(await r.json()).request_id}},
+ hdr:async u=>{const r=await fetch(u);const h={};r.headers.forEach((v,k)=>h[k]=v);
+  return{url:u,status:r.status+' '+r.statusText,headers:h}},
+ gh:async u=>{const r=await fetch('https://api.github.com/users/'+encodeURIComponent(u));
+  if(!r.ok)throw new Error('User GitHub tidak ditemukan');const j=await r.json();
+  const repos=await fetch(j.repos_url+'?per_page=100&sort=updated').then(r=>r.json());
+  return{...j,repos}},
+ exif:()=>new Promise((res,rej)=>{const f=$('in-exif').files[0];if(!f)return rej(new Error('Pilih gambar dulu'));
+  const img=new Image();img.onload=()=>{const cv=document.createElement('canvas');
+   cv.width=img.width;cv.height=img.height;cv.getContext('2d').drawImage(img,0,0);
+   res({name:f.name,size:(f.size/1024).toFixed(1)+' KB',type:f.type,dim:img.width+' x '+img.height,dataUrl:cv.toDataURL('image/jpeg',.7),
+    lastmod:f.lastModified?new Date(f.lastModified).toLocaleString('id-ID'):'-'});};
+  img.onerror=()=>res({name:f.name,size:(f.size/1024).toFixed(1)+' KB',type:f.type,dim:'gagal load',dataUrl:null});
+  img.src=URL.createObjectURL(f)}),
+ qr:q=>'https://api.qrserver.com/v1/create-qr-code/?size=400x400&data='+encodeURIComponent(q),
+ hash:async t=>({s1:await sha(t,'SHA-1'),s256:await sha(t),s512:await sha(t,'SHA-512')}),
+ b64enc:()=>btoa(unescape(encodeURIComponent($('in-b64').value))),
+ b64dec:()=>decodeURIComponent(escape(atob($('in-b64').value.trim()))),
+ urlcd:()=>encodeURIComponent($('in-urlcd').value),
+ pass:()=>{const cs='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%&*';const a=new Uint32Array(20);crypto.getRandomValues(a);return{pw:[...a].map(n=>cs[n%cs.length]).join('')}},
+ uuid:()=>({v4:crypto.randomUUID()}),
+ wayback:async u=>{const r=await fetch(`https://archive.org/wayback/available?url=${encodeURIComponent(u)}`);return{url:u,j:await r.json()}},
+ paste:async q=>{const r=await fetch('https://psbdmp.ws/api/search/'+encodeURIComponent(q));
+  if(!r.ok)throw new Error('psbdmp.ws tidak tersedia');const j=await r.json();return{q,dumps:(j.data||[]).slice(0,20)}},
+ tech:async u=>{const r=await fetch(u);const h={};r.headers.forEach((v,k)=>h[k]=v);const t=await r.text();
+  const det=[];/wp-content|wordpress/i.test(t)&&det.push('WordPress');/react|__NEXT_DATA__/.test(t)&&det.push('React/Next.js');
+  /vue/.test(t)&&det.push('Vue');/shopify/.test(t)&&det.push('Shopify');/gtag|analytics/.test(t)&&det.push('Google Analytics');
+  /cloudflare/.test(h.server||'')&&det.push('Cloudflare');
+  return{url:u,server:h.server,tech:det.length?det:['tidak terdeteksi'],len:t.length}},
+ shot:u=>'https://image.thum.io/get/width/600/crop/900/'+u,
+ cidr:c=>{const[ip,pc]=c.split('/');const pl=parseInt(pc);if(isNaN(pl)||pl<0||pl>32)throw new Error('CIDR tidak valid');
+  const ipi=ip.split('.').map(Number).reduce((a,o)=>(a<<8)+o,0)>>>0;
+  const mask=pl===0?0:(0xFFFFFFFF<<(32-pl))>>>0;const net=(ipi&mask)>>>0,bc=(net|(~mask>>>0))>>>0;
+  const f=x=>[x>>>24&255,x>>>16&255,x>>>8&255,x&255].join('.');
+  return{cidr:c,network:f(net),broadcast:f(bc),first:f(net+1),last:f(bc-1),hosts:bc-net-1,mask:f(mask)}},
+ ident:()=>{const fn=['Aditya','Bagus','Citra','Dimas','Eka','Fajar','Gita','Hana','Indra','Joko','Kevin','Laras','Maya','Nanda','Putra'];
+  const ln=['Saputra','Wijaya','Nugroho','Pratama','Santoso','Halim','Kusuma','Firmansyah','Maulana'];
+  const city=['Jakarta','Bandung','Surabaya','Medan','Semarang','Makassar','Yogyakarta','Denpasar','Palembang','Balikpapan'];
+  const r=a=>a[Math.floor(Math.random()*a.length)];const n=r(fn)+' '+r(ln);
+  const y=1985+Math.floor(Math.random()*20),m=1+Math.floor(Math.random()*12),d=1+Math.floor(Math.random()*28);
+  const nik='32'+String(1+Math.floor(Math.random()*30)).padStart(2,'0')+String(y).slice(2)+(m<10?'0'+m:m)+(d<10?'0'+d:d)+String(1000+Math.floor(Math.random()*8999));
+  return{nama:n,ttl:r(city)+', '+d+'/'+m+'/'+y,nik,umur:new Date().getFullYear()-y,
+   email:n.toLowerCase().replace(' ','.')+Math.floor(Math.random()*99)+'@gmail.com',
+   telp:'+62 8'+Math.floor(11+Math.random()*88)+' '+Math.floor(1000+Math.random()*8999)+' '+Math.floor(1000+Math.random()*8999),
+   job:r(['Developer','Desainer','Analis','Marketing','Guru','Penulis','Engineer','Konsultan'])}},
+ aesenc:async()=>{const t=$('in-aes-t').value,p=$('in-aes-k').value;if(!t||!p)throw new Error('Teks & kunci wajib');
+  const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(p.padEnd(32,'0').slice(0,32)),'AES-GCM');
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(t));
+  return{r:btoa(String.fromCharCode(...iv)+'::'+String.fromCharCode(...new Uint8Array(ct)))}},
+ aesdec:async()=>{const t=$('in-aes-t').value.trim(),p=$('in-aes-k').value;if(!t||!p)throw new Error('Data & kunci wajib');
+  const raw=Uint8Array.from(atob(t),c=>c.charCodeAt(0));
+  const iv=raw.slice(0,12),ct=raw.slice(14);
+  const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(p.padEnd(32,'0').slice(0,32)),'AES-GCM');
+  return{r:new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv},key,ct))}},
+ scope:()=>generateScope(),
+ clone:()=>cloneSite()
+};
+
+/* ================== RENDER ================== */
+const RENDER={
+ ip:(d,o)=>o.innerHTML=kv('IP',d.ip)+kv('Negara',(d.flag?.emoji||'')+' '+d.country)+kv('Region',d.region)+kv('Kota',d.city)+kv('ISP',d.connection?.isp)+kv('Org',d.connection?.org)+kv('ASN',d.connection?.asn)+kv('Koordinat',d.latitude+', '+d.longitude)+kv('Timezone',d.timezone?.id)+(d.is_proxy?kv('PROXY/VPN','TERDETEKSI ⚠','notfound'):''),
+ sub:(d,o)=>o.innerHTML=kv('Domain',d.domain)+kv('Total',d.subs.length,'found')+`<div class="out">${esc(d.subs.join('\n'))}</div>`,
+ user:(d,o)=>o.innerHTML=kv('Username',d.username)+d.results.map(r=>`<div class="kv"><b>${esc(r.name)}</b><span class="${r.found?'found':'notfound'}">${r.found?'DITEMUKAN ✔':'✘'}</span></div><div class="note">${esc(r.url)}</div>`).join(''),
+ phone:(d,o)=>o.innerHTML=kv('Nomor',d.number)+kv('Operator',d.operator,'info')+kv('Valid',d.valid?'YA ✔':'TIDAK ✘',d.valid?'found':'notfound')+kv('Panjang',d.len+' digit'),
+ whois:(d,o)=>o.innerHTML=kv('Domain',d.domain)+kv('Registrar',d.reg)+d.ev.map(e=>{const[a,b]=e.split(' : ');return kv(a,b)}).join('')+kv('NS',d.ns.join(', '))+kv('Status',(d.st||[]).join(', ')),
+ dns:(d,o)=>o.innerHTML=d.rec.filter(r=>r.a.length).map(r=>`<div class="kv"><b>${r.t}</b></div><div class="out">${esc(r.a.join('\n'))}</div>`).join('')||'<i>tidak ada record</i>',
+ email:(d,o)=>o.innerHTML=kv('Email',d.email)+kv('Format','VALID ✔','found')+kv('MX',d.mx)+kv('Hash',d.h)+`<div class="note"><a href="https://www.gravatar.com/avatar/${d.h}" target="_blank">[ CEK GRAVATAR ]</a></div>`,
+ port:(d,o)=>o.innerHTML=kv('Host',d.host)+kv('Port',d.port)+kv('Request ID',d.rid)+`<div class="note"><a href="https://check-host.net/check-tcp?host=${encodeURIComponent(d.host+':'+d.port)}" target="_blank">[ LIHAT HASIL NODE ]</a></div>`,
+ hdr:(d,o)=>o.innerHTML=kv('URL',d.url)+kv('Status',d.status)+Object.entries(d.headers).map(([k,v])=>kv(k,v)).join(''),
+ gh:(d,o)=>o.innerHTML=kv('Nama',d.name||d.login)+kv('Bio',d.bio)+kv('Lokasi',d.location)+kv('Company',d.company)+kv('Public Repos',d.public_repos)+kv('Followers',d.followers)+kv('Following',d.following)+kv('Akun dibuat',d.created_at)+kv('Total Stars',d.repos.reduce((a,r)=>a+(r.stargazers_count||0),0))+d.repos.slice(0,10).map(r=>kv(r.name,(r.language||'-')+' ★'+r.stargazers_count)).join(''),
+ exif:(d,o)=>o.innerHTML=kv('File',d.name)+kv('Ukuran',d.size)+kv('Tipe',d.type)+kv('Dimensi',d.dim)+kv('Terakhir diubah',d.lastmod)+(d.dataUrl?`<img class="prev" src="${d.dataUrl}">`:''),
+ qr:(d,o)=>o.innerHTML=kv('Data',$('in-qr').value)+`<img class="prev" src="${d}"><div class="note">tap &amp; tahan gambar untuk simpan</div>`,
+ hash:(d,o)=>o.innerHTML=kv('SHA-1',d.s1)+kv('SHA-256',d.s256)+kv('SHA-512',d.s512),
+ b64enc:(d,o)=>o.innerHTML=`<div class="out">${esc(d)}</div>`,b64dec:(d,o)=>o.innerHTML=`<div class="out">${esc(d)}</div>`,
+ urlcd:(d,o)=>o.innerHTML=`<div class="out">${esc(d)}</div>`,
+ pass:(d,o)=>o.innerHTML=kv('Password (20 char)',d.pw,'found')+kv('Kekuatan','SANGAT KUAT 💪','found'),
+ uuid:(d,o)=>o.innerHTML=kv('UUID v4',d.v4),
+ aesenc:(d,o)=>o.innerHTML=kv('ENCRYPT ✓','')+`<div class="out">${esc(d.r)}</div>`,
+ aesdec:(d,o)=>o.innerHTML=kv('DECRYPT ✓','')+`<div class="out">${esc(d.r)}</div>`,
+ wayback:(d,o)=>{const s=d.j.archived_snapshots?.closest;o.innerHTML=s?kv('Snapshot',s.timestamp)+kv('URL asli',s.url)+`<div class="note"><a href="https://web.archive.org/web/${s.timestamp}/${d.url}" target="_blank">[ BUKA DI WAYBACK ]</a></div>`:'<span class="notfound">Tidak ada snapshot</span>'},
+ paste:(d,o)=>o.innerHTML=kv('Keyword',d.q)+kv('Dumps',d.dumps.length,'found')+(d.dumps.map(p=>kv('#'+p.id,new Date(p.date*1000).toLocaleString('id-ID'))).join('')||'<i>tidak ada</i>'),
+ tech:(d,o)=>o.innerHTML=kv('URL',d.url)+kv('Server',d.server)+kv('Framework',d.tech.join(', '),'found')+kv('Ukuran',(d.len/1024).toFixed(1)+' KB'),
+ shot:(d,o)=>o.innerHTML=kv('Target',$('in-shot').value)+`<img class="prev" src="${d}">`,
+ cidr:(d,o)=>o.innerHTML=kv('CIDR',d.cidr)+kv('Network',d.network)+kv('Broadcast',d.broadcast)+kv('Range',d.first+' — '+d.last)+kv('Total Host',d.hosts.toLocaleString())+kv('Subnet Mask',d.mask),
+ ident:(d,o)=>o.innerHTML=kv('Nama',d.nama)+kv('TTL',d.ttl)+kv('Umur',d.umur+' th')+kv('NIK',d.nik)+kv('Email',d.email)+kv('Telp',d.telp)+kv('Pekerjaan',d.job),
+ scope:(d,o)=>o.innerHTML=kv('Doc ID',d.id,'found')+kv('Klien',d.name)+kv('Jenis Test',d.type)+kv('Jumlah Target',d.targets.length)+`<div class="out">${esc(d.targets.join('\n'))}</div>`+kv('Aturan Engagement',d.rules.length+' pasal')+`<div class="note">✔ File <b>Scope-${d.id}.html</b> sudah terdownload — buka di browser untuk cetak PDF, atau edit pakai editor teks/Word.</div>`
+};
+
+/* ================== [RIWAYAT] ================== */
+const HKEY='m4zk_history_v1';
+const getHist=()=>{try{return JSON.parse(localStorage.getItem(HKEY))||[]}catch{return[]}};
+function saveScan(e){const h=getHist();h.unshift(e);if(h.length>100)h.pop();localStorage.setItem(HKEY,JSON.stringify(h));slog('[SAVE] '+e.module+' tersimpan')}
+function clearHist(){if(confirm('Hapus SEMUA riwayat scan?')){localStorage.removeItem(HKEY);renderHist();toast('[✔] Riwayat dihapus')}}
+window.renderHist=function(){
+ const h=getHist(),o=$('out-hist');if(!o)return;
+ o.innerHTML=h.length?kv('Total Tersimpan',h.length,'found')+
+  h.map((e,i)=>`<div class="kv"><b>#${i+1} ${esc(e.module)}</b><span>${new Date(e.ts).toLocaleString('id-ID')}</span></div>
+   <div class="note">Target: ${esc(e.input)}</div>
+   <details style="margin:6px 0 12px"><summary>▸ LIHAT HASIL</summary><div class="out">${e.result}</div></details>`).join('')
+  :'<i>riwayat kosong — jalankan scan dulu bro</i>';
+};
+
+/* ================== [SCOPE GENERATOR] ================== */
+function generateScope(){
+ const g=id=>($(id)?$(id).value.trim():'');
+ const name=g('sc-name'),pent=g('sc-pentester'),email=g('sc-email'),
+       start=g('sc-start'),end=g('sc-end'),targets=g('sc-targets'),rules=g('sc-rules'),type=$('sc-type').value;
+ if(!name||!pent||!targets)throw new Error('Nama klien, pentester, dan target wajib diisi');
+ const tg=targets.split('\n').map(t=>t.trim()).filter(Boolean);
+ const id='M4ZK-'+Date.now().toString(36).toUpperCase();
+ const rl=rules?rules.split('\n').filter(Boolean):[
+  'Pengujian dilakukan tanpa merusak availability layanan (No DoS)',
+  'Dilarang menghapus, mengubah, atau mengeksfiltrasi data riil pengguna',
+  'Vulnerability exploitation dibatasi untuk pembuktian (Proof of Concept)',
+  'Semua temuan dilaporkan secara confidential kepada pemilik aset',
+  'Testing dihentikan segera jika terjadi insiden produksi'];
+ const html=`<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
+<title>Scope Authorization — ${esc(name)}</title>
+<style>body{font-family:Georgia,serif;max-width:800px;margin:40px auto;padding:0 24px;color:#111;line-height:1.6}
+h1{border-bottom:3px double #111;padding-bottom:10px;font-size:22px}
+h2{font-size:15px;margin-top:28px;border-left:4px solid #111;padding-left:8px}
+table{width:100%;border-collapse:collapse;margin:10px 0}
+td,th{border:1px solid #333;padding:8px;font-size:14px;text-align:left}
+th{background:#eee}.box{border:2px solid #111;padding:14px;margin:14px 0;background:#fafafa}
+ol li{margin:6px 0}.sign{display:flex;justify-content:space-between;margin-top:60px}
+.sign div{width:45%;border-top:1px solid #111;padding-top:6px;font-size:13px;text-align:center}
+.mono{font-family:monospace}</style></head><body>
+<h1>DOKUMEN AUTHORIZATION &amp; SCOPE<br>PENETRATION TESTING</h1>
+<p><b>Doc ID:</b> <span class="mono">${id}</span> &nbsp;|&nbsp; <b>Dibuat:</b> ${new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}</p>
+<h2>1. PIHAK YANG TERLIBAT</h2>
+<table>
+<tr><th>Klien / Pemilik Aset</th><td>${esc(name)}</td></tr>
+<tr><th>Pentester / Tim</th><td>${esc(pent)}</td></tr>
+<tr><th>Kontak Pentester</th><td>${esc(email||'-')}</td></tr>
+<tr><th>Periode Engagement</th><td>${esc(start||'-')} s/d ${esc(end||'-')}</td></tr>
+<tr><th>Jenis Pengujian</th><td>${esc(type)}</td></tr>
+</table>
+<h2>2. RUANG LINGKUP (SCOPE)</h2>
+<p>Target yang diberikan izin untuk diuji:</p>
+<table><tr><th>No</th><th>Target</th></tr>
+${tg.map((t,i)=>`<tr><td>${i+1}</td><td class="mono">${esc(t)}</td></tr>`).join('')}
+</table>
+<div class="box"><b>Out of Scope:</b> Seluruh aset di luar daftar di atas <u>dilarang</u> untuk diuji, termasuk infrastruktur pihak ketiga, sub-kontraktor, dan aset yang tidak tercantum secara eksplisit.</div>
+<h2>3. METODOLOGI</h2>
+<p>Pengujian mengacu pada standar industri: <b>OWASP Testing Guide v4.2</b>, <b>PTES</b>, dan <b>NIST SP 800-115</b>, mencakup: Reconnaissance → Scanning → Enumeration → Exploitation → Post-Exploitation → Reporting.</p>
+<h2>4. ATURAN ENGAGEMENT (RULES OF ENGAGEMENT)</h2>
+<ol>${rl.map(r=>`<li>${esc(r)}</li>`).join('')}</ol>
+<h2>5. LEGAL &amp; LIABILITAS</h2>
+<p>Penandatangan dokumen ini menyatakan memiliki kewenangan penuh atas aset yang tercantum dalam scope, dan memberikan persetujuan resmi kepada pihak pentester untuk melakukan pengujian keamanan sesuai batasan yang ditetapkan. Segala aktivitas di luar scope dan rules of engagement dianggap sebagai tindakan tidak berizin.</p>
+<div class="sign">
+ <div>${esc(name)}<br><small>Pemilik Aset / Klien</small></div>
+ <div>${esc(pent)}<br><small>Pentester</small></div>
+</div>
+</body></html>`;
+ const blob=new Blob([html],{type:'text/html'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+ a.download='Scope-'+id+'.html';a.click();
+ slog('[SCOPE] '+id+' generated — '+tg.length+' target');
+ toast('[✔] Scope document terdownload');
+ return{id,name,type,targets:tg,rules:rl};
+}
+
+/* ================== [GOOGLE DORKING — 74 DORK] ================== */
+const DORKS={
+ '📁 FILE SENSITIF':[
+  ['filetype:env "{D}" DB_PASSWORD','.env dengan kredensial DB'],
+  ['intitle:"index of" "{D}" .env','.env ter-ekspos di directory listing'],
+  ['intitle:"index of" "{D}" password.txt','file password.txt terbuka'],
+  ['filetype:sql "{D}" INSERT INTO','dump database SQL terbuka'],
+  ['filetype:bak "{D}"','file backup .bak'],
+  ['filetype:old "{D}" OR filetype:orig "{D}"','file backup versi lama'],
+  ['intitle:"index of" "{D}" backup','folder backup terbuka'],
+  ['filetype:log "{D}" password OR pass OR token','file log berisi kredensial'],
+  ['intitle:"index of" "{D}" ".git"','folder .git ter-ekspos'],
+  ['intitle:"index of" "{D}" ".htaccess"','file .htaccess terbuka'],
+  ['filetype:conf "{D}" password','file config berisi password'],
+  ['filetype:ini "{D}" "password"','file .ini berisi kredensial'],
+  ['filetype:pem "{D}" OR filetype:key "{D}"','private key ter-ekspos'],
+ ],
+ '🔑 API KEY & TOKEN':[
+  ['"{D}" "api_key" filetype:env OR filetype:txt OR filetype:json','API key ter-ekspos'],
+  ['"{D}" "AIza" Google API key','Google API key (AIza...)'],
+  ['"{D}" "AKIA" AWS access key','AWS Access Key (AKIA...)'],
+  ['"{D}" "sk_live" OR "pk_live" stripe','Stripe live key'],
+  ['"{D}" "ghp_" OR "gho_" github token','GitHub token ter-ekspos'],
+  ['"{D}" "xoxb" OR "xoxp" slack token','Slack token'],
+  ['"{D}" "Bearer" token filetype:js OR filetype:json','Bearer token di source code'],
+  ['"{D}" "firebase" "apiKey" filetype:json','Firebase config bocor'],
+  ['"{D}" "smtp" "password" filetype:env OR filetype:php','SMTP kredensial bocor'],
+  ['"{D}" "secret_key" OR "private_key" filetype:env','Secret/private key bocor'],
+  ['"{D}" "sendgrid" OR "twilio" OR "mailgun" api key','API key layanan email/SMS'],
+ ],
+ '🗄 DATABASE & ADMIN':[
+  ['intitle:"phpMyAdmin" "{D}"','phpMyAdmin terbuka'],
+  ['intitle:"index of" "{D}" "admin"','folder admin ter-ekspos'],
+  ['"{D}" inurl:admin login','halaman admin'],
+  ['"{D}" inurl:admin panel dashboard','admin panel/dashboard'],
+  ['intitle:"index of" "{D}" ".sql"','.sql dump terbuka'],
+  ['"phpMyAdmin SQL Dump" "{D}"','dump phpMyAdmin terindeks'],
+  ['"{D}" inurl:/phpmyadmin/','path phpMyAdmin'],
+  ['intitle:"admin" "{D}" "password" "login"','form login admin'],
+  ['"{D}" inurl:/adminer OR inurl:adminer.php','Adminer database tool'],
+ ],
+ '🔐 KREDENSIAL & LOGIN':[
+  ['"{D}" filetype:xls OR filetype:xlsx "password"','kredensial di Excel'],
+  ['"{D}" filetype:csv "password" OR "email"','kredensial di CSV'],
+  ['"{D}" filetype:pdf "password" OR "kredensial"','password di dokumen PDF'],
+  ['intitle:"login" "{D}"','halaman login target'],
+  ['"{D}" "userpass" OR "user_pass" OR "credentials"','kredensial hard-coded'],
+  ['"{D}" filetype:txt "username" "password"','file txt berisi kredensial'],
+  ['"{D}" inurl:"wp-login"','WordPress login'],
+  ['"{D}" inurl:"signin.php" OR inurl:"?signin"','login page alternatif'],
+  ['"{D}" "admin" "123456" OR "admin123"','default kredensial terindeks'],
+ ],
+ '📄 DOKUMEN & DATA':[
+  ['"{D}" filetype:pdf','dokumen PDF target'],
+  ['"{D}" filetype:doc OR filetype:docx','dokumen Word target'],
+  ['"{D}" filetype:xlsx OR filetype:xls','spreadsheet target'],
+  ['"{D}" filetype:pptx OR filetype:ppt','presentasi target'],
+  ['"{D}" filetype:pdf "rahasia" OR "confidential" OR "internal"','dokumen internal/rahasia'],
+  ['"{D}" filetype:pdf "daftar gaji" OR "payroll"','data gaji'],
+  ['"{D}" filetype:pdf "KTP" OR "NIK"','dokumen identitas'],
+  ['"{D}" filetype:csv OR filetype:xlsx "NIK" OR "ktp"','data KTP/NIK di file'],
+ ],
+ '🌐 INFO & STRUKTUR SITUS':[
+  ['site:{D}','semua halaman terindeks'],
+  ['site:{D} inurl:upload','endpoint upload'],
+  ['site:{D} inurl:".php?id="','parameter id (uji SQLi)'],
+  ['site:{D} inurl:".php?page=" OR inurl:".php?file="','parameter LFI'],
+  ['site:{D} inurl:"?search=" OR inurl:"?q="','parameter search (uji XSS)'],
+  ['site:{D} intitle:"index of"','directory listing terbuka'],
+  ['site:{D} inurl:"/wp-content/"','struktur WordPress'],
+  ['site:{D} inurl:".git" OR inurl:".svn"','repo version control bocor'],
+  ['site:{D} filetype:xml','file XML (sitemap/config)'],
+  ['site:{D} filetype:json','file JSON terbuka'],
+  ['site:{D} inurl:robots.txt','robots.txt (peta area tersembunyi)'],
+  ['site:{D} inurl:debug OR inurl:test','halaman debug/testing'],
+  ['site:{D} inurl:"/api/"','endpoint API'],
+ ],
+ '☁ LAYANAN CLOUD & BUCKET':[
+  ['site:s3.amazonaws.com "{D}"','AWS S3 bucket terindeks'],
+  ['site:blob.core.windows.net "{D}"','Azure Blob terbuka'],
+  ['site:storage.googleapis.com "{D}"','Google Cloud Storage terbuka'],
+  ['site:drive.google.com "{D}"','file target di Google Drive'],
+  ['site:docs.google.com "{D}"','dokumen target di Google Docs'],
+  ['"{D}" "cloudinary" OR "imgur" secrets','aset & secrets cloud'],
+ ],
+ '📞 KONTAK & OSINT':[
+  ['"{D}" (email OR "@gmail.com" OR "@yahoo.com")','email terkait target'],
+  ['"{D}" (linkedin OR facebook OR twitter OR instagram)','sosmed terkait target'],
+  ['"{D}" filetype:vcard OR filetype:vcf','kontak vCard target'],
+  ['"{D}" filetype:pdf "curriculum" OR intitle:"cv"','CV karyawan target'],
+  ['"{D}" (forum OR diskusi) password OR leak','diskusi/leak terkait target'],
+ ]
+};
+window.renderDorks=function(){
+ const d=$('in-dork').value.trim().replace(/^https?:\/\//,'').replace(/\/$/,'');
+ const o=$('out-dork');if(!o)return;
+ if(!d){o.innerHTML='<span class="notfound">[!] masukkan domain target dulu</span>';toast('[!] Domain kosong',1);return}
+ let total=0;
+ const cats=Object.keys(DORKS).map(cat=>{
+  const items=DORKS[cat].map(([q,desc])=>{
+   total++;
+   const query=q.replace(/\{D\}/g,d);
+   const url='https://www.google.com/search?q='+encodeURIComponent(query);
+   return `<div class="kv" style="flex-direction:column;align-items:stretch">
+    <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
+     <b>${esc(desc)}</b><a href="${url}" target="_blank" style="font-size:11px">[ ▶ BUKA GOOGLE ]</a></div>
+    <div class="note" style="margin-top:2px">${esc(query)}</div></div>`;
+  }).join('');
+  return `<h3 class="hd" style="border-color:var(--acc3)">${cat}</h3><div class="out" data-cat="${esc(cat)}">${items}</div>`;
+ }).join('');
+ $('dork-filter').innerHTML=`<button class="act chip" onclick="dorkFilter('')">[ SEMUA (${total}) ]</button>`+
+  Object.keys(DORKS).map(c=>`<button class="act chip" onclick="dorkFilter(this.dataset.c)" data-c="${esc(c)}">[ ${esc(c)} ]</button>`).join('');
+ o.innerHTML=kv('Target',d,'found')+kv('Total Dork',total,'found')+cats;
+ saveScan({module:'dorking',input:d+' ('+total+' dork)',result:total+' dork link dibuat',ts:Date.now()});
+ scanCount++;const sc=$('st-scan');if(sc)sc.textContent=scanCount;
+ slog('[RUN] dorking '+d+' — '+total+' dork');
+ toast('[✔] '+total+' dork siap ditembak');
+};
+window.dorkFilter=function(cat){
+ document.querySelectorAll('#out-dork > .out[data-cat]').forEach(el=>{
+  el.style.display=(!cat||el.dataset.cat===cat)?'':'none';
+ });
+};
+
+/* ================== [CLONE SITE ENGINE → ZIP] ================== */
+const CPX=u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u);
+const CPX2=u=>'https://corsproxy.io/?url='+encodeURIComponent(u);
+async function cFetch(url){
+ try{const r=await fetch(CPX(url));if(r.ok)return r}catch{}
+ const r=await fetch(CPX2(url));if(r.ok)return r;
+ throw new Error('gagal fetch: '+url);
+}
+async function cloneSite(){
+ let base=$('in-clone').value.trim();
+ if(!base)throw new Error('Masukkan URL target dulu');
+ if(!/^https?:\/\//.test(base))base='https://'+base;
+ const u0=new URL(base),host=u0.hostname;
+ const maxPg=parseInt($('cl-max').value)||15,maxAs=parseInt($('cl-assets').value)||60;
+ const o=$('out-clone');
+ const prog=m=>{o.textContent+=m+'\n';o.scrollTop=o.scrollHeight};
+ o.textContent='[BOOT] clone engine start — target: '+base+'\n';
+ if(typeof JSZip==='undefined')throw new Error('JSZip belum termuat (butuh internet saat pertama buka)');
+ const zip=new JSZip();
+ const root=zip.folder(host);
+ const seen=new Set(),assets=[],pages=[];
+ let pgN=0,asN=0,failN=0;
+
+ function assetPath(abs){
+  try{const u=new URL(abs);
+   let p=u.pathname.replace(/^\/+/,'')||'index';
+   if(p.endsWith('/'))p+='index.html';
+   return 'res_'+u.hostname.replace(/\./g,'_')+'/'+p;
+  }catch{return 'assets/'+assets.length}
+ }
+ function pagePath(abs){
+  try{const u=new URL(abs);
+   let p=u.pathname.replace(/^\/+/,'')||'';
+   if(!p||p.endsWith('/'))p+='index.html';
+   if(!/\.[a-z0-9]+$/i.test(p))p+='_index.html';
+   return u.hostname.replace(/\./g,'_')+'__'+p.replace(/[\/?=&]/g,'_');
+  }catch{return 'page_'+pgN+'.html'}
+ }
+ function rewrite(html){
+  const doc=new DOMParser().parseFromString(html,'text/html');
+  doc.querySelectorAll('[src]').forEach(el=>{
+   const s=el.getAttribute('src');if(!s||s.startsWith('data:'))return;
+   try{const abs=new URL(s,base).href;
+    if(!seen.has(abs)){seen.add(abs);assets.push(abs)}
+    el.setAttribute('src',assetPath(abs));
+   }catch{}});
+  doc.querySelectorAll('link[href]').forEach(el=>{
+   const s=el.getAttribute('href');if(!s||s.startsWith('data:'))return;
+   if(el.rel!=='stylesheet'&&!(el.rel||'').includes('icon'))return;
+   try{const abs=new URL(s,base).href;
+    if(!seen.has(abs)){seen.add(abs);assets.push(abs)}
+    el.setAttribute('href',assetPath(abs));
+   }catch{}});
+  doc.querySelectorAll('a[href]').forEach(el=>{
+   const s=el.getAttribute('href')||'';
+   if(/^(#|mailto:|tel:|javascript:)/.test(s))return;
+   try{const abs=new URL(s,base).href;
+    if(new URL(abs).hostname===host){pages.push(abs);el.setAttribute('href',pagePath(abs))}
+    else el.setAttribute('href',abs);
+   }catch{}});
+  doc.querySelectorAll('style').forEach(el=>{
+   el.textContent=el.textContent.replace(/url\((['"]?)([^'")]+)\1\)/g,(m,q,p)=>{
+    if(p.startsWith('data:'))return m;
+    try{const abs=new URL(p,base).href;
+     if(!seen.has(abs)){seen.add(abs);assets.push(abs)}
+     return `url('${assetPath(abs)}')`;
+    }catch{return m}});
+  });
+  /* strip script eksternal agar clone jalan murni offline */
+  doc.querySelectorAll('script[src]').forEach(el=>{
+   const s=el.getAttribute('src');if(!s)return;
+   try{const abs=new URL(s,base).href;
+    if(!seen.has(abs)){seen.add(abs);assets.push(abs)}
+    el.setAttribute('src',assetPath(abs));
+   }catch{}});
+  return '<!-- Cloned by M4zk1pL4y Nusantara OSINT v5.0 | '+new Date().toISOString()+' -->\n'+doc.documentElement.outerHTML;
+ }
+
+ /* --- BFS crawl --- */
+ const queue=[base];
+ while(queue.length&&pgN<maxPg){
+  const url=queue.shift();
+  if(seen.has(url))continue;seen.add(url);
+  try{
+   prog('[PAGE '+(pgN+1)+'/'+maxPg+'] '+url);
+   const r=await cFetch(url);
+   const ct=r.headers.get('content-type')||'';
+   if(!ct.includes('html')){assets.push(url);continue}
+   const html=await r.text();
+   root.file(pagePath(url),rewrite(html));
+   pgN++;
+  }catch(e){failN++;prog('[FAIL] '+url+' — '+e.message)}
+ }
+ /* hilangkan duplikat halaman, ambil halaman baru saja untuk aset crawl */
+ const pageAssets=assets.slice();
+
+ /* --- download aset --- */
+ const toDl=[...new Set(pageAssets)].slice(0,maxAs);
+ prog('[ASSETS] mengunduh '+toDl.length+' aset (img/css/js/font)...');
+ let i=0;
+ for(const a of toDl){
+  i++;
+  try{
+   const r=await cFetch(a);
+   const buf=await r.arrayBuffer();
+   root.file(assetPath(a),buf);
+   asN++;
+   if(i%5===0)prog('  ↳ '+asN+'/'+toDl.length+' aset ok');
+  }catch{failN++}
+ }
+
+ /* --- manifest & readme --- */
+ root.file('clone-report.json',JSON.stringify({target:base,host,pages:pgN,assets:asN,failed:failN,
+  clonedAt:new Date().toISOString(),tool:'M4zk1pL4y Nusantara OSINT v5.0 — authorized scope clone',
+  resourceList:toDl},null,2));
+ root.file('README.txt',
+  'M4zk1pL4y Nusantara — Website Clone Archive\n'+
+  'Target  : '+base+'\nHalaman : '+pgN+'\nAset    : '+asN+'\nGagal   : '+failN+'\n'+
+  'Tanggal : '+new Date().toLocaleString('id-ID')+'\n\n'+
+  'Cara buka: ekstrak ZIP → buka file HTML hasil clone dengan browser.\n'+
+  'Gunakan hanya untuk aset dengan otorisasi pengujian.');
+
+ prog('[ZIP] memaketkan arsip...');
+ const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+ a.download='Clone-'+host.replace(/\./g,'_')+'-'+Date.now().toString(36)+'.zip';a.click();
+
+ slog('[CLONE] '+host+' — '+pgN+' halaman, '+asN+' aset');
+ saveScan({module:'clone',input:base,result:pgN+' halaman, '+asN+' aset, ZIP '+(blob.size/1024).toFixed(0)+'KB',ts:Date.now()});
+ scanCount++;const sc=$('st-scan');if(sc)sc.textContent=scanCount;
+ toast('[✔] Clone ZIP terdownload');
+ prog('[DONE] ✔ Clone selesai — ZIP terdownload');
+ return{host,pages:pgN,assets:asN,failed:failN,size:(blob.size/1024).toFixed(1)};
+}
+RENDER.clone=(d,o)=>o.innerHTML+=kv('Hasil Akhir','✔ SELESAI','found')+kv('Halaman',d.pages)+kv('Aset',d.assets)+kv('Gagal',d.failed,d.failed?'notfound':'found')+kv('Ukuran ZIP',d.size+' KB')+
+ `<div class="note">✔ Ekstrak ZIP → buka file HTML di browser → situs jalan offline lengkap dengan gambar, CSS &amp; JS. Ada <b>clone-report.json</b> berisi manifest semua resource.</div>`;
+
+/* ================== NET WATCHER ================== */
+function netU(){const on=navigator.onLine,e=$('net');e.className=on?'on':'off';
+ e.textContent=on?'[ ONLINE ]':'[ OFFLINE ]';
+ const st=$('st-online');if(st)st.textContent=on?'●':'○';
+ tick(on?'[SYS] '+(tools.length-1)+' modul realtime siap':'[SYS] offline — modul lokal tetap aktif');}
+addEventListener('online',()=>{netU();toast('[+] Koneksi pulih')});
+addEventListener('offline',()=>{netU();toast('[!] Koneksi terputus',1)});
+netU();setInterval(netU,5000);
+slog('[BOOT] M4zk1pL4y Nusantara v5.0 FULLSTACK siap beroperasi');
+slog('[BOOT] '+(tools.length-1)+' modul aktif — mode standalone (no server)');
+</script>
+</body>
+</html>

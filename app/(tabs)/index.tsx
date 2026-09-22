@@ -38,7 +38,9 @@ export default function HomeScreen() {
   const [forwarding, setForwarding] = useState<Message | null>(null);
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const recorderState = useAudioRecorderState(recorder);
-  const introPlayer = useVideoPlayer(introVideo, (player) => {
+  // Delay native codec initialization until the intro is actually visible.
+  // This prevents startup crashes on devices with an unavailable media codec.
+  const introPlayer = useVideoPlayer(showIntro ? introVideo : null, (player) => {
     player.loop = true;
     player.muted = false;
     player.volume = 1;
