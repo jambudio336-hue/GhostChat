@@ -4,13 +4,13 @@ import type { ExpoConfig } from "expo/config";
 const config: ExpoConfig = {
   name: "GhostChat",
   slug: "ghostchat",
-  version: "1.0.2",
+  version: "1.0.3",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: "ghostchat",
   userInterfaceStyle: "dark",
-  // react-native-webrtc 124 is more stable on the classic bridge for this Expo SDK.
-  newArchEnabled: false,
+  // Required by react-native-reanimated 4.x in Expo SDK 54.
+  newArchEnabled: true,
   ios: { supportsTablet: true, bundleIdentifier: "com.mrk1pl4y.ghostchat", infoPlist: { ITSAppUsesNonExemptEncryption: false, NSCameraUsageDescription: "GhostChat membutuhkan kamera untuk video call privat.", NSMicrophoneUsageDescription: "GhostChat membutuhkan mikrofon untuk panggilan terenkripsi." } },
   android: { adaptiveIcon: { backgroundColor: "#0c0d10", foregroundImage: "./assets/images/android-icon-foreground.png", backgroundImage: "./assets/images/android-icon-background.png", monochromeImage: "./assets/images/android-icon-monochrome.png" }, edgeToEdgeEnabled: true, predictiveBackGestureEnabled: false, package: "com.mrk1pl4y.ghostchat", permissions: ["POST_NOTIFICATIONS", "CAMERA", "RECORD_AUDIO", "FOREGROUND_SERVICE", "FOREGROUND_SERVICE_MICROPHONE", "FOREGROUND_SERVICE_CAMERA"] },
   web: { bundler: "metro", output: "static", favicon: "./assets/images/favicon.png" },
